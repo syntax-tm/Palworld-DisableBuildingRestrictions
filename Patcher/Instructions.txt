@@ -15,11 +15,10 @@ EXE GUI VERSION:
 
 
 PYTHON COMMAND LINE VERSION:
-
 Prerequisites:
 Install python from: https://www.python.org/  (when installing python make sure that you select the option at the bottom of the installer that says something about adding python to PATH)
 
-1. download both BuildPatcher.py and BuildPatcher.ini
+1. Download both BuildPatcher.py and BuildPatcher.ini
 2. Open BuildPatcher.ini and make sure that palworld_root is set to the root folder of your game
    3a. Open BuildPatcher.ini and set patch_is_permanent to what you want(true or false)
    3b. if you choose patch_is_permanent = false, you must launch the game with the .py file at every run or risk the dangerous side affect listed earlier
@@ -29,14 +28,17 @@ Install python from: https://www.python.org/  (when installing python make sure 
 FAQ:
 
 What is the difference between this and the 2 files CactusPi3 posted?
-Cactus's files are for editing the memory address of the game, thus meaning you load the game first, then load the .CT or his exe... My patcher files patch the games exe itself, so my mods/patches get applied before the game is ever launched.
+  Cactus's files are for editing the memory address of the game, thus meaning you load the game first, then load the .CT or his exe... My patcher files patch the games exe itself, so my mods/patches get applied before the game is ever launched.
 
 Does the files need to be put anywhere special?
-no run it from anywhere. Only requirements are the ini must be with either the .py file or the .exe(depending on which version your using.)
-and the ini file must be edited to include your current root directory to the game.
+  No run it from anywhere. Only requirements are the ini must be with either the .py file or the .exe(depending on which version your using.)
+  and the ini file must be edited to include your current root directory to the game.
 
-What version is recomended?
-I use the python command line version personally, after you set the ini file with your directory and set the patch_is_permanent flag to what you want, all you need to do in the future is double click the .py file and it will do its thing
+What version is recommended?
+  I use the python command line version personally, after you set the ini file with your directory and set the patch_is_permanent flag to what you want, all you need to do in the future is double click the .py file and it will do its thing
+
+What patch method is recommended?
+  Personally, I use the Temporary method. this is due to the extra protection awarded from the version/md5 check before the game can be launched.
 
 Do I need cheat engine or the .CT files to use either of these?
-No.
+  No.
