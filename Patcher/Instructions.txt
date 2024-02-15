@@ -1,0 +1,42 @@
+First things First... using the mod/patch to remove support restriction is dangerous, if you build a base with the mod/patch applied then later on accidently run the game without the patch/mod applied YOU WILL load into your save game to watch as your base gets destroyed.
+with that being said this is not an issue as long as you never load your save without the patch being applied.
+
+If you use the permanent method listed below sure you can use steam or launch the game normally but this comes with a side affect, if the game ever updates and you dont realize it...you will load your save up and wonder why your whole base just exploded
+If you use the Temporary method listed below sure its a bit more of a hassle to run the game threw the patcher every time but this has the bonus of my check making sure the games exe is the expected version, if the version is changed the patcher will tell you the games exe md5 isnt correct... this is your only warning that message means 1 of 2 things, 1-the game updated and the patches/mods are no longer applied. 2-the patching process failed somehow and just restoring the exe itself to its unmodified state then re-attempting the patch will fix it.  If its the 1st one and you attempt to load the game ignoring the message you will loose your base.
+
+
+EXE GUI VERSION:
+1. Make sure you download both BuildPatcher.exe and BuildPatcher.ini
+2. Open BuildPatcher.ini and make sure that palworld_root is set to the root folder of your game
+3. delete any of the mods/patches in the ini you dont want installed(note patches listed as 1or2 will only work if both patches get applied)
+4. doubleclick/run BuildPatcher.exe and choose which method you want to use to modify the game.
+   5a. if you choose temporary patch, you must run the patcher and choose this method every time you want to play the game or the dangerous side affect listed earlier comes into play
+   5b if you choose permanent patch, you just need to click it once and once you see the message that the patch was successful you can close the patcher and run the game normaly threw the stock launcher/steam
+
+
+PYTHON COMMAND LINE VERSION:
+
+Prerequisites:
+Install python from: https://www.python.org/  (when installing python make sure that you select the option at the bottom of the installer that says something about adding python to PATH)
+
+1. download both BuildPatcher.py and BuildPatcher.ini
+2. Open BuildPatcher.ini and make sure that palworld_root is set to the root folder of your game
+   3a. Open BuildPatcher.ini and set patch_is_permanent to what you want(true or false)
+   3b. if you choose patch_is_permanent = false, you must launch the game with the .py file at every run or risk the dangerous side affect listed earlier
+   3c. if you choose patch_is_permanent = true, you only need to run the .py file once, after that you can run the game normally threw steam/palworld 
+
+
+FAQ:
+
+What is the difference between this and the 2 files CactusPi3 posted?
+Cactus's files are for editing the memory address of the game, thus meaning you load the game first, then load the .CT or his exe... My patcher files patch the games exe itself, so my mods/patches get applied before the game is ever launched.
+
+Does the files need to be put anywhere special?
+no run it from anywhere. Only requirements are the ini must be with either the .py file or the .exe(depending on which version your using.)
+and the ini file must be edited to include your current root directory to the game.
+
+What version is recomended?
+I use the python command line version personally, after you set the ini file with your directory and set the patch_is_permanent flag to what you want, all you need to do in the future is double click the .py file and it will do its thing
+
+Do I need cheat engine or the .CT files to use either of these?
+No.
