@@ -5,8 +5,12 @@ import configparser
 import hashlib
 import os
 import psutil
+import sys
 import time
 import webbrowser
+import subprocess
+import threading
+from threading import Thread
 
 class PatcherGUI:
     def __init__(self, master):
@@ -14,20 +18,60 @@ class PatcherGUI:
         self.info_label = tk.Label(master, text="", fg="green")
         self.info_label.pack()
 
-        self.create_button("Temporary Patch", lambda: self.execute_patch("Temporary"),
-                           "This will create a backup of the game's executable file, apply the patches, launch the game, and after the game is closed it will restore the game's executable using the previously made backup.")
-        self.create_button("Permanent Patch", lambda: self.execute_patch("Permanent"),
+        left_frame = tk.Frame(self.master)
+        left_frame.pack(side=tk.LEFT, padx=5)
+
+        right_frame = tk.Frame(self.master)
+        right_frame.pack(side=tk.RIGHT, padx=5)
+
+        bottom_frame = tk.Frame(self.master)
+        bottom_frame.pack(side=tk.BOTTOM, pady=10)
+        
+        help_button = tk.Frame(self.master)
+        help_button.pack(side=tk.TOP, padx=5)
+        
+        self.create_button(help_button, "HELP", self.open_help_link,
+                   "This will open the github readme file to explain this app's uses and warnings.")
+        
+        self.create_button(left_frame, "Permanent Client Patch", lambda: self.execute_patch("Permanent_Client"),
                            "This will create a backup of the game's executable file and apply the patches. Afterward, you can close this program and run the game yourself.\n\nWARNING: This method may make it easy to overlook game updates, potentially leading to accidentally launching the game without the patches and risking your base if you used the Build without support option.")
-        self.create_button("Restore EXE", lambda: self.execute_patch("Restore"),
-                           "This will restore the EXE from the backup made by the other 2 options if needed.")
+        self.create_button(left_frame, "Temporary Client Patch", lambda: self.execute_patch("Temporary_Client"),
+                           "This will create a backup of the game's executable file, apply the patches, launch the game, and after the game is closed it will restore the game's executable using the previously made backup.")
+        self.create_button(right_frame, "Permanent Server Patch", lambda: self.execute_patch("Permanent_Server"),
+                           "This will create a backup of the server's executable file and apply the patches. Afterward, you can close this program and run the game yourself.\n\nWARNING: This method may make it easy to overlook server updates, potentially leading to accidentally launching the server without the patches and risking your base if you used the Build without support option.")
+        self.create_button(right_frame, "Temporary Server Patch", lambda: self.execute_patch("Temporary_Server"),
+                           "This will create a backup of the server's executable file, apply the patches, launch the server, and after the server is closed it will restore the server's executable using the previously made backup.")
+
+        self.create_button(bottom_frame, "Restore EXE", lambda: self.execute_patch("Restore"),
+                           "This will restore the EXE files from the backups made by the other Permanent options if needed.")
 
         self.info_popup = None
+    
+    def execute_patch_from_command_line(self, arg):
+        valid_args = ["Permanent_Client", "Temporary_Client", "Permanent_Server", "Temporary_Server", "Restore"]
 
-    def create_button(self, text, command, popup_message):
-        button = tk.Button(self.master, text=text, command=command)
-        button.pack(pady=10)
+        if arg not in valid_args:
+            print("Invalid argument. Please provide one of the following: {}".format(valid_args))
+            return
+
+        self.execute_script(arg)
+    
+    def open_help_link(self):
+        webbrowser.open("https://raw.githubusercontent.com/Spark-NV/Palworld-DisableBuildingRestrictions/master/Patcher/Instructions.txt")
+
+    def create_button(self, frame, text, command, popup_message):
+        button = tk.Button(frame, text=text, command=command)
+        button.pack(side=tk.TOP, pady=10)
         button.bind("<Enter>", lambda event, msg=popup_message: self.show_info_popup(event, msg))
         button.bind("<Leave>", self.hide_info_popup)
+        
+    def create_dual_buttons(self, text1, command1, popup_message1, text2, command2, popup_message2):
+        frame = tk.Frame(self.master)
+        frame.pack()
+
+        self.create_button(text1, lambda: self.execute_patch(command1), popup_message1)
+        self.create_button(text2, lambda: self.execute_patch(command2), popup_message2)
+
 
     def hide_info_popup(self, _):
         if self.info_popup:
@@ -71,41 +115,97 @@ class PatcherGUI:
         sha256.update(file_content)
         return sha256.hexdigest()
 
-    def read_hex_edits_from_ini(self, file_path):
+    def read_hex_edits_from_ini(self, file_path, is_client_or_server):
         config = configparser.ConfigParser()
         config.read(file_path)
         hex_edits = {}
-
+    
         for section in config.sections():
             if section != 'SHA256' and section != 'ROOT':
-                if 'Search' in config[section] and 'Replace' in config[section]:
-                    search_hex = config[section]['Search']
-                    replace_hex = config[section]['Replace']
-                    hex_edits[section] = {'search': search_hex, 'replace': replace_hex}
+                if is_client_or_server == 'Permanent_Client':
+                    if 'ClientSearch' in config[section] and 'ClientReplace' in config[section]:
+                        search_hex = config[section]['ClientSearch']
+                        replace_hex = config[section]['ClientReplace']
+                        hex_edits[section] = {'search': search_hex, 'replace': replace_hex}
+                    else:
+                        print(f"Warning: Section '{section}' is missing 'Search' or 'Replace' key. Skipping.")
+                elif is_client_or_server == 'Permanent_Server':
+                    if 'ServerSearch' in config[section] and 'ServerReplace' in config[section]:
+                        search_hex = config[section]['ServerSearch']
+                        replace_hex = config[section]['ServerReplace']
+                        hex_edits[section] = {'search': search_hex, 'replace': replace_hex}
+                    else:
+                        print(f"Warning: Section '{section}' is missing 'Search' or 'Replace' key. Skipping.")
+                elif is_client_or_server == 'Temporary_Client':
+                    if 'ClientSearch' in config[section] and 'ClientReplace' in config[section]:
+                        search_hex = config[section]['ClientSearch']
+                        replace_hex = config[section]['ClientReplace']
+                        hex_edits[section] = {'search': search_hex, 'replace': replace_hex}
+                    else:
+                        print(f"Warning: Section '{section}' is missing 'Search' or 'Replace' key. Skipping.")
+                elif is_client_or_server == 'Temporary_Server':
+                    if 'ServerSearch' in config[section] and 'ServerReplace' in config[section]:
+                        search_hex = config[section]['ServerSearch']
+                        replace_hex = config[section]['ServerReplace']
+                        hex_edits[section] = {'search': search_hex, 'replace': replace_hex}
+                    else:
+                        print(f"Warning: Section '{section}' is missing 'Search' or 'Replace' key. Skipping.")
                 else:
-                    print(f"Warning: Section '{section}' is missing 'Search' or 'Replace' key. Skipping.")
-
+                    print("this shouldnt happen.")
+    
         return hex_edits
 
-    def read_expected_sha256_from_ini(self, file_path):
+    def read_expected_sha256_from_ini(self, file_path, is_client_or_server):
         config = configparser.ConfigParser()
         config.read(file_path)
-        return config['SHA256']['Expected']
+        if is_client_or_server == 'Permanent_Client':
+            return config['SHA256']['ClientExpected']
+        elif is_client_or_server == 'Temporary_Client':
+            return config['SHA256']['ClientExpected']
+        elif is_client_or_server == 'Permanent_Server':
+            return config['SHA256']['ServerExpected']
+        elif is_client_or_server == 'Temporary_Server':
+            return config['SHA256']['ServerExpected']
+        else:
+            print("this shouldnt happen.")
 
-    def cleanup(self, file_path, backup_file_path):
+    def monitor_game_process(self, process_names, cleanup_function, *args):
+        time.sleep(5)
         while True:
-            processes = [p.name() for p in psutil.process_iter(['pid', 'name'])]
-
-            if "palworld.exe" in processes or "Palworld-Win64-Shipping.exe" in processes:
-                self.set_info_message("Game Running. with mods applied")
+            if any(process_name in [p.name() for p in psutil.process_iter(['name'])] for process_name in process_names):
                 time.sleep(5)
             else:
-                os.remove(file_path)
-                os.rename(backup_file_path, file_path)
-                self.set_info_message("Game closed. Exe Restored...")
+                cleanup_function(*args)
                 break
+                
+    def monitor_server_process(self, process_names, cleanup_function, *args):
+        time.sleep(5)
+        while True:
+            if any(process_name in [p.name() for p in psutil.process_iter(['name'])] for process_name in process_names):
+                time.sleep(5)
+            else:
+                cleanup_function(*args)
+                break
+    
+    def clientcleanup(self, cfile_path, cbackup_file_path):
+        try:
+            os.remove(cfile_path)
+            os.rename(cbackup_file_path, cfile_path)
+            print("Game client closed!\n\nThe exe has been restored.")
+            self.set_info_message("Game client closed!\n\nThe exe has been restored.")
+        except Exception as e:
+            print("")
+    
+    def servercleanup(self, sfile_path, sbackup_file_path):
+        try:
+            os.remove(sfile_path)
+            os.rename(sbackup_file_path, sfile_path)
+            print("Server closed!\n\nThe exe has been restored.")
+            self.set_info_message("Server exe closed!\n\nThe exe has been restored.")
+        except Exception as e:
+            print("")
 
-    def execute_script(self, patch_type):
+    def execute_script(self, is_client_or_server):
         try:
             ini_file_path = "BuildPatcher.ini"
             if not os.path.exists(ini_file_path):
@@ -115,20 +215,49 @@ class PatcherGUI:
             config = configparser.ConfigParser()
             config.read(ini_file_path)
 
-            palworld_root = config['ROOT']['palworld_root']
-            exe_name = os.path.join(palworld_root, "Palworld.exe")
-            file_path = os.path.join(palworld_root, "Pal", "Binaries", "Win64", "Palworld-Win64-Shipping.exe")
-            backup_file_path = os.path.join(palworld_root, "Pal", "Binaries", "Win64",
-                                            "Palworld-Win64-Shipping_backup.exe")
+            if is_client_or_server == 'Permanent_Client':
+                palworld_root = config['ROOT']['palworld_root']
+                exe_name = os.path.join(palworld_root, "Palworld.exe")
+                file_path = os.path.join(palworld_root, "Pal", "Binaries", "Win64", "Palworld-Win64-Shipping.exe")
+                backup_file_path = os.path.join(palworld_root, "Pal", "Binaries", "Win64", "Palworld-Win64-Shipping_backup.exe")
+            elif is_client_or_server == 'Permanent_Server':
+                palserver_root = config['ROOT']['palserver_root']
+                exe_name = os.path.join(palserver_root, "PalServer.exe")
+                file_path = os.path.join(palserver_root, "Pal", "Binaries", "Win64", "PalServer-Win64-Test-Cmd.exe")
+                backup_file_path = os.path.join(palserver_root, "Pal", "Binaries", "Win64", "PalServer-Win64-Test-Cmd_backup.exe")
+            elif is_client_or_server == 'Temporary_Client':
+                palworld_root = config['ROOT']['palworld_root']
+                exe_name = os.path.join(palworld_root, "Palworld.exe")
+                file_path = os.path.join(palworld_root, "Pal", "Binaries", "Win64", "Palworld-Win64-Shipping.exe")
+                backup_file_path = os.path.join(palworld_root, "Pal", "Binaries", "Win64", "Palworld-Win64-Shipping_backup.exe")
+                cfile_path = os.path.join(palworld_root, "Pal", "Binaries", "Win64", "Palworld-Win64-Shipping.exe")
+                cbackup_file_path = os.path.join(palworld_root, "Pal", "Binaries", "Win64", "Palworld-Win64-Shipping_backup.exe")
+            elif is_client_or_server == 'Temporary_Server':
+                palserver_root = config['ROOT']['palserver_root']
+                exe_name = os.path.join(palserver_root, "PalServer.exe")
+                file_path = os.path.join(palserver_root, "Pal", "Binaries", "Win64", "PalServer-Win64-Test-Cmd.exe")
+                backup_file_path = os.path.join(palserver_root, "Pal", "Binaries", "Win64", "PalServer-Win64-Test-Cmd_backup.exe")
+                sfile_path = os.path.join(palserver_root, "Pal", "Binaries", "Win64", "PalServer-Win64-Test-Cmd.exe")
+                sbackup_file_path = os.path.join(palserver_root, "Pal", "Binaries", "Win64", "PalServer-Win64-Test-Cmd_backup.exe")
+            elif is_client_or_server == 'Restore':
+                palserver_root = config['ROOT']['palserver_root']
+                palworld_root = config['ROOT']['palworld_root']
+                #exe_name = os.path.join(palserver_root, "PalServer.exe")
+                server_file_path = os.path.join(palserver_root, "Pal", "Binaries", "Win64", "PalServer-Win64-Test-Cmd.exe")
+                server_backup_file_path = os.path.join(palserver_root, "Pal", "Binaries", "Win64", "PalServer-Win64-Test-Cmd_backup.exe")
+                client_file_path = os.path.join(palworld_root, "Pal", "Binaries", "Win64", "Palworld-Win64-Shipping.exe")
+                client_backup_file_path = os.path.join(palworld_root, "Pal", "Binaries", "Win64", "Palworld-Win64-Shipping_backup.exe")
+            else:
+                print("Error: weird, this shouldn't happen.")
 
-            if patch_type != "Restore":
+            if is_client_or_server != "Restore":
                 if not os.path.exists(file_path):
                     messagebox.showerror("\nError: The file {} does not exist. Please ensure palworld_root is set correctly in the INI file.\n".format(file_path))
                     return
                 with open(file_path, 'rb') as file:
                     original_content = file.read()
 
-                expected_sha256 = self.read_expected_sha256_from_ini(ini_file_path)
+                expected_sha256 = self.read_expected_sha256_from_ini(ini_file_path, is_client_or_server)
                 original_sha256 = self.calculate_sha256(original_content)
                 print(f"Original SHA256: {original_sha256}")
 
@@ -140,7 +269,7 @@ class PatcherGUI:
                 with open(backup_file_path, 'wb') as backup_file:
                     backup_file.write(original_content)
 
-                hex_edits = self.read_hex_edits_from_ini(ini_file_path)
+                hex_edits = self.read_hex_edits_from_ini(ini_file_path, is_client_or_server)
 
                 for edit_name, edit_data in hex_edits.items():
                     search_hex = edit_data["search"]
@@ -150,28 +279,40 @@ class PatcherGUI:
                 with open(file_path, 'wb') as modified_file:
                     modified_file.write(original_content)
 
-            if patch_type == "Temporary":
-                self.set_info_message("Temporary patch completed successfully!\n\nThe game will now launch.")
-                time.sleep(2)
-                Thread(target=lambda: webbrowser.open("steam://rungameid/1623730")).start()
-                self.master.after(5000, lambda: self.cleanup(file_path, backup_file_path))
-            elif patch_type == "Permanent":
-                self.set_info_message("Permanent patch completed successfully!\nA backup of the exe will be stored here:\n{}".format(backup_file_path))
-            elif patch_type == "Restore":
-                if os.path.exists(backup_file_path):
-                    os.remove(file_path)
-                    os.rename(backup_file_path, file_path)
-                    self.set_info_message("EXE has been restored using the backup file manually.")
-                else:
-                    messagebox.showerror("Error",
-                                         "It appears there is no backup file present to use\n\n this option restores the file:\n\n {}\n\nif it's not present or renamed this will not work.".format(
-                                             backup_file_path))
+            if is_client_or_server == "Temporary_Client":
+                self.set_info_message("Temporary Client patch completed successfully!\n\nThe game will now launch.")
 
+                time.sleep(2)
+                subprocess.Popen(["start", "steam://rungameid/1623730"], shell=True)
+                threading.Thread(target=self.monitor_game_process, args=[("Palworld-Win64-Shipping.exe", "Palworld.exe"), self.clientcleanup, cfile_path, cbackup_file_path]).start()
+            elif is_client_or_server == "Temporary_Server":
+                self.set_info_message("Temporary Server patch completed successfully!\n\nThe server will now launch.")
+                time.sleep(2)
+                subprocess.Popen(["start", "steam://rungameid/2394010"], shell=True)
+                threading.Thread(target=self.monitor_server_process, args=[("PalServer-Win64-Test-Cmd.exe", "Palserver.exe"), self.servercleanup, sfile_path, sbackup_file_path]).start()
+            elif is_client_or_server == "Permanent_Client":
+                self.set_info_message("Permanent Client patch completed successfully!\nA backup of the exe will be stored here:\n{}".format(backup_file_path))
+            elif is_client_or_server == "Permanent_Server":
+                self.set_info_message("Permanent Server patch completed successfully!\nA backup of the exe will be stored here:\n{}".format(backup_file_path))
+                
+            elif is_client_or_server == "Restore":
+                if not os.path.exists(client_backup_file_path) and not os.path.exists(server_backup_file_path):
+                    messagebox.showerror("Error",
+                             "It appears there is no backup file present to use.\n\nThis option restores the backup files.\n\nIf they are not present or renamed, this will not work.")
+                if os.path.exists(client_backup_file_path):
+                    os.remove(client_file_path)
+                    os.rename(client_backup_file_path, client_file_path)
+                    self.set_info_message("EXE has been restored using the client backup file manually.")
+                if os.path.exists(server_backup_file_path):
+                    os.remove(server_file_path)
+                    os.rename(server_backup_file_path, server_file_path)
+                    self.set_info_message("EXE has been restored using the server backup file manually.")
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
-    def execute_patch(self, patch_type):
-        Thread(target=lambda: self.execute_script(patch_type)).start()
+    def execute_patch(self, is_client_or_server):
+        self.set_info_message("Working!")
+        Thread(target=lambda: self.execute_script(is_client_or_server)).start()
 
 
 if __name__ == "__main__":
@@ -179,10 +320,14 @@ if __name__ == "__main__":
     gui = PatcherGUI(root)
     root.title("Palworld Build Restrictions Remover Patcher")
 
-    def update_window_size():
-        root.update_idletasks()
-        width = root.winfo_reqwidth()
-        height = root.winfo_reqheight()
-        root.geometry(f"{width}x{height}")
-    root.minsize(400, 100)
-    root.mainloop()
+    if len(sys.argv) == 2:
+        gui.execute_patch_from_command_line(sys.argv[1])
+    else:
+        def update_window_size():
+            root.update_idletasks()
+            width = root.winfo_reqwidth()
+            height = root.winfo_reqheight()
+            root.geometry(f"{width}x{height}")
+
+        root.minsize(400, 100)
+        root.mainloop()
