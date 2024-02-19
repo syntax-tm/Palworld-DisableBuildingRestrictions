@@ -46,6 +46,8 @@ def get_user_input():
         print("\n3. Patch the Server, Permanently (ie:Create a backup then patch the exe.")
         print("4. Patch the Server, Temporarily (ie:Patches, then launches the server, will restore the exe after closing")
         print("\n5. Patch BOTH the Server and Client, Temporarily (ie:Patches, then launches the server plus the client, will restore both exe after closing\n")
+        
+        print("\ntype \"help\" to open the instructions for help on what each option does\n")
 
         user_input = input("Enter the corresponding numbers (1/2/3/4/5): ")
 
@@ -53,6 +55,8 @@ def get_user_input():
             if user_input == '5':
                 return ['5']
             elif user_input in ('1', '2', '3', '4'):
+                return [user_input]
+            elif user_input in ('help'):
                 return [user_input]
             else:
                 print("Invalid input. Please enter a number from the list above.")
@@ -156,12 +160,17 @@ def main():
     config = configparser.ConfigParser()
     config.read(ini_file_path)
     user_input = get_user_input()
-    print(f"User input: {user_input}")
+    is_client_or_server = None
     
     if user_input and '5' in user_input:
         patch_is_permanent = 'false'
         is_client_or_server = 'client'
         subprocess.Popen(['python', 'BuildPatcher.py', '4'], creationflags=subprocess.CREATE_NO_WINDOW)
+    elif user_input and 'help' in user_input:
+       webbrowser.open("https://raw.githubusercontent.com/Spark-NV/Palworld-DisableBuildingRestrictions/master/Patcher/Instructions.txt")
+       print("\nInstructions opened in your default browser\n")
+       input("Press any key to exit...")
+       exit(1)
     elif user_input and user_input[0] in ('1', '2', '3', '4'):
         patch_is_permanent = 'true' if user_input[0] in ('1', '3') else 'false'
         is_client_or_server = 'client' if user_input[0] in ('1', '2') else 'server'
