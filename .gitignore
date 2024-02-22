@@ -1,0 +1,2 @@
+# Ignore DLL Compile folder
+Patcher/DLL/src/PalPatcher/x64/*
