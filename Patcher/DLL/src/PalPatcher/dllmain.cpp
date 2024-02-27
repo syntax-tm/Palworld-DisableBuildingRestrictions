@@ -201,30 +201,30 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 			// PALWORLD
 			Log("Found palworld!");
 			modifications = {
-				{(LPVOID)0x2944E03, new BYTE[6]{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, 6}, // Building in mid air
-				{(LPVOID)0x294F815, new BYTE[2]{0xEB, 0x15}, 2}, // Allow building close to palbox
-				{(LPVOID)0x2A222D2, new BYTE[2]{0x90, 0x90}, 2}, // Overlapping bases
-				{(LPVOID)0x2A221EF, new BYTE[2]{0xEB, 0x07}, 2}, // Disable world collision
-				{(LPVOID)0x2944E93, new BYTE[2]{0xEB, 0x0E}, 2}, // Allow building on water
-				{(LPVOID)0x2933148, new BYTE[2]{0x90, 0x90}, 2}, // Support Restriction Remove
-				{(LPVOID)0x2A6A7AF, new BYTE[2]{0x90, 0x90}, 2} // Support Restriction Remove2
+				{(LPVOID)0x2980955, new BYTE[2]{0xEB, 0x15}, 2}, // Allow building close to palbox
+				{(LPVOID)0x2975E6E, new BYTE[6]{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, 6}, // Building in mid air
+				{(LPVOID)0x2A5A0D2, new BYTE[2]{0x90, 0x90}, 2}, // Overlapping bases
+				{(LPVOID)0x2A59FEF, new BYTE[2]{0xEB, 0x07}, 2}, // Disable world collision
+				{(LPVOID)0x2975EFC, new BYTE[2]{0xEB, 0x0E}, 2}, // Allow building on water
+				{(LPVOID)0x296408B, new BYTE[2]{0x90, 0x90}, 2}, // Support Restriction Remove
+				{(LPVOID)0x2AA4CEF, new BYTE[2]{0x90, 0x90}, 2} // Support Restriction Remove2
 			};
-			expectedMD5 = L"10C8C01E696F3ED6286679A2792E182E";
+			expectedMD5 = L"CB825A66C98A1B8BB9FF17B693EA9006";
 		}
 		else if (executableName.find(L"palserver") != std::wstring::npos)
 		{
 			// PALSERVER
 			Log("Found palserver!");
 			modifications = {
-				{(LPVOID)0x297CAAE, new BYTE[6]{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, 6}, // Building in mid air
-				{(LPVOID)0x2987494, new BYTE[5]{0xC0, 0xEB, 0x15, 0x48, 0x8B}, 5}, // Allow building close to palbox
-				{(LPVOID)0x2A5ECF2, new BYTE[2]{0x90, 0x90}, 2}, // Overlapping bases
-				{(LPVOID)0x2A5EC0F, new BYTE[2]{0xEB, 0x07}, 2}, // Disable world collision
-				{(LPVOID)0x297CB3C, new BYTE[2]{0xEB, 0x0E}, 2}, // Allow building on water
-				{(LPVOID)0x296B00B, new BYTE[2]{0x90, 0x90}, 2}, // Support Restriction Remove
-				{(LPVOID)0x2AA7C7, new BYTE[2]{0x90, 0x90}, 2} // Support Restriction Remove2
+				{(LPVOID)0x298BCE5, new BYTE[5]{0xC0, 0xEB, 0x15, 0x48, 0x8B}, 5}, // Allow building close to palbox
+				{(LPVOID)0x29812AE, new BYTE[6]{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, 6}, // Building in mid air
+				{(LPVOID)0x2A66312, new BYTE[2]{0x90, 0x90}, 2}, // Overlapping bases
+				{(LPVOID)0x2A6622F, new BYTE[2]{0xEB, 0x07}, 2}, // Disable world collision
+				{(LPVOID)0x298133C, new BYTE[2]{0xEB, 0x0E}, 2}, // Allow building on water
+				{(LPVOID)0x296F4BB, new BYTE[2]{0x90, 0x90}, 2}, // Support Restriction Remove
+				{(LPVOID)0x2AB12FF, new BYTE[2]{0x90, 0x90}, 2} // Support Restriction Remove2
 			};
-			expectedMD5 = L"66A6155C3EFC43A07A44CEF7E0966F28";
+			expectedMD5 = L"65486D3DAC73D2B976D011421F3D32FA";
 		}
 		else
 		{

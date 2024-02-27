@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\Spark\Desktop\PalPatcher\x64\Debug\PalPatcher.dll</FullPath>
+      <FullPath>C:\Users\Spark\Desktop\Palworld-DisableBuildingRestrictions\Patcher\DLL\src\PalPatcher\x64\Debug\PalPatcher.dll</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

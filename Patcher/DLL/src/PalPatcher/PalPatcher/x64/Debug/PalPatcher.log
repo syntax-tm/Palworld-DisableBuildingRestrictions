@@ -1,1 +1,3 @@
-﻿
+﻿  pch.cpp
+  dllmain.cpp
+  PalPatcher.vcxproj -> C:\Users\Spark\Desktop\Palworld-DisableBuildingRestrictions\Patcher\DLL\src\PalPatcher\x64\Debug\PalPatcher.dll
