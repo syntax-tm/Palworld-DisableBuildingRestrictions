@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "bierner.markdown-preview-github-styles",
+        "codezombiech.gitignore",
+        "davidanson.vscode-markdownlint",
+        "ms-dotnettools.csdevkit",
+        "ms-python.vscode-pylance",
+        "yzhang.markdown-all-in-one"
+    ]
+}

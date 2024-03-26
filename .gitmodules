@@ -1,0 +1,4 @@
+[submodule "src/gui/deps/memory"]
+	path = src/gui/deps/memory
+	url = https://github.com/erfg12/memory.dll.git
+	branch = master
